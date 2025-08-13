@@ -1,0 +1,54 @@
+<html>
+<head>
+    <title>Download Calendar Event</title>
+    <script>
+        function getQueryParam(name) {
+            name = name.replace(/[\[\]]/g, '\\$&');
+            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+            var results = regex.exec(window.location.href);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+
+        function downloadICS() {
+            var eventTitle = getQueryParam('title') || 'Default Event Title';
+            var startDate = getQueryParam('start') || '20250901T100000Z'; // YYYYMMDDTHHMMSSZ
+            var endDate = getQueryParam('end') || '20250901T110000Z';     // YYYYMMDDTHHMMSSZ
+            var description = getQueryParam('desc') || 'Default event description.';
+            var location = getQueryParam('loc') || 'Default Location';
+
+            var icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Your Company//Your Product//EN
+BEGIN:VEVENT
+UID:${Date.now().toString()}
+DTSTAMP:${new Date().toISOString().replace(/[:-]/g, '').slice(0, -5) + 'Z'}
+DTSTART:${startDate}
+DTEND:${endDate}
+SUMMARY:${eventTitle}
+DESCRIPTION:${description}
+LOCATION:${location}
+END:VEVENT
+END:VCALENDAR`;
+
+            var blob = new Blob([icsContent], { type: 'text/calendar' });
+            var link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = (eventTitle.replace(/[^a-z0-9]/gi, '_') || 'appointment') + '.ics';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Optional: Attempt to close the window after download
+            setTimeout(function() { window.close(); }, 500); 
+        }
+
+        window.onload = downloadICS;
+    </script>
+</head>
+<body>
+    <p>Your download should start automatically. If it doesn't, please check your browser's download section or manually download.</p>
+</body>
+</html>
